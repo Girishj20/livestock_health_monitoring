@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Livestock Herds - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Livestock Animal Registry</h3>
+        <p class="text-muted small mb-0">Browse, search, and manage registered herd records across farms</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('reports.export_animals') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+            <i class="bi bi-download me-1"></i> Export CSV
+        </a>
+        <a href="{{ url_for('animals.register') }}" class="btn btn-success rounded-pill px-3 py-1 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> Register Animal
+        </a>
+    </div>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="glass-card p-3 mb-4">
+    <form method="GET" action="{{ url_for('animals.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Search tag, name, breed..." value="{{ search }}">
+            </div>
+        </div>
+
+        <div class="col-md-2">
+            <select name="species" class="form-select form-select-sm">
+                <option value="All" {% if selected_species == 'All' %}selected{% endif %}>All Species</option>
+                <option value="Cow" {% if selected_species == 'Cow' %}selected{% endif %}>Cow (Cattle)</option>
+                <option value="Buffalo" {% if selected_species == 'Buffalo' %}selected{% endif %}>Buffalo</option>
+                <option value="Goat" {% if selected_species == 'Goat' %}selected{% endif %}>Goat</option>
+                <option value="Sheep" {% if selected_species == 'Sheep' %}selected{% endif %}>Sheep</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="health_status" class="form-select form-select-sm">
+                <option value="All" {% if selected_health_status == 'All' %}selected{% endif %}>All Health Statuses</option>
+                <option value="Normal" {% if selected_health_status == 'Normal' %}selected{% endif %}>Normal</option>
+                <option value="Monitoring Required" {% if selected_health_status == 'Monitoring Required' %}selected{% endif %}>Monitoring Required</option>
+                <option value="Attention Required" {% if selected_health_status == 'Attention Required' %}selected{% endif %}>Attention Required</option>
+                <option value="Urgent Veterinary Attention" {% if selected_health_status == 'Urgent Veterinary Attention' %}selected{% endif %}>Urgent Vet Attention</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="status" class="form-select form-select-sm">
+                <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All Management Status</option>
+                <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Active</option>
+                <option value="Sick" {% if selected_status == 'Sick' %}selected{% endif %}>Sick / Quarantine</option>
+                <option value="Archived" {% if selected_status == 'Archived' %}selected{% endif %}>Archived</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="farm_id" class="form-select form-select-sm">
+                <option value="">All Farms</option>
+                {% for f in farms %}
+                <option value="{{ f.id }}" {% if selected_farm_id == f.id %}selected{% endif %}>{{ f.farm_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-1 d-flex gap-1">
+            <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill">Filter</button>
+            <a href="{{ url_for('animals.index') }}" class="btn btn-sm btn-outline-secondary rounded-pill" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Animals Table -->
+<div class="glass-card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Animal Details</th>
+                    <th>Species & Breed</th>
+                    <th>Age / Sex</th>
+                    <th>Weight</th>
+                    <th>Farm</th>
+                    <th>Health Status</th>
+                    <th>Mgt. Status</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if animals %}
+                {% for a in animals %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="animal-avatar">
+                                {% if a.image_path %}
+                                <img src="{{ url_for('static', filename=a.image_path) }}" alt="{{ a.animal_tag }}" class="w-100 h-100 rounded-2" style="object-fit: cover;">
+                                {% else %}
+                                <i class="bi bi-tag-fill"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <a href="{{ url_for('animals.detail', id=a.id) }}" class="fw-bold text-success text-decoration-none fs-6">
+                                    {{ a.animal_tag }}
+                                </a>
+                                {% if a.animal_name %}
+                                <small class="text-muted d-block">{{ a.animal_name }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <strong>{{ a.species }}</strong>
+                        <small class="text-muted d-block">{{ a.breed or 'Unspecified breed' }}</small>
+                    </td>
+                    <td>
+                        {{ a.age_display }} · <span class="text-muted">{{ a.sex }}</span>
+                    </td>
+                    <td>
+                        {% if a.weight_kg %}<strong>{{ a.weight_kg }}</strong> <small class="text-muted">kg</small>{% else %}-{% endif %}
+                    </td>
+                    <td>
+                        <span class="small">{{ a.farm.farm_name if a.farm else 'N/A' }}</span>
+                    </td>
+                    <td>
+                        <span class="badge-status badge-{{ a.health_badge_class }}">
+                            <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> {{ a.health_status }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-secondary border">{{ a.status }}</span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{{ url_for('animals.detail', id=a.id) }}" class="btn btn-outline-success" title="View Profile">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('observations.record', animal_id=a.id) }}" class="btn btn-outline-primary" title="Record Observation">
+                                <i class="bi bi-clipboard-plus"></i>
+                            </a>
+                            <a href="{{ url_for('animals.edit', id=a.id) }}" class="btn btn-outline-secondary" title="Edit Animal">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No animals found matching your search or filters.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

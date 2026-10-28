@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Record Vaccination - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Record Vaccination or Preventive Care</h3>
+        <p class="text-muted small mb-0">Log an immunization dose, deworming treatment, or schedule upcoming boosters</p>
+    </div>
+    <a href="{{ url_for('vaccinations.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Back to Schedule
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 p-md-5">
+            <form method="POST" action="{{ url_for('vaccinations.record') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">Target Animal *</label>
+                    <select name="animal_id" class="form-select" required>
+                        <option value="">-- Select Animal Tag --</option>
+                        {% for a in animals %}
+                        <option value="{{ a.id }}" {% if selected_animal and selected_animal.id == a.id %}selected{% endif %}>
+                            {{ a.animal_tag }} ({{ a.species }} · {{ a.breed or 'Mixed' }}) - {{ a.farm.farm_name if a.farm else 'Farm' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-7">
+                        <label class="form-label small fw-semibold">Vaccine / Preventive Name *</label>
+                        <input type="text" name="vaccine_name" list="commonVaccines" class="form-control" placeholder="e.g. FMD Oil Adjuvant Vaccine" required>
+                        <datalist id="commonVaccines">
+                            <option value="Foot and Mouth Disease (FMD) Oil Adjuvant Vaccine">
+                            <option value="Hemorrhagic Septicemia (HS) Vaccine">
+                            <option value="Blackquarter (BQ) Vaccine">
+                            <option value="Brucella Abortus S19 Vaccine">
+                            <option value="Peste des Petits Ruminants (PPR) Vaccine">
+                            <option value="Enterotoxemia (Pulpy Kidney) CD&T Vaccine">
+                            <option value="Anthrax Spore Vaccine">
+                            <option value="Broad Spectrum Deworming (Albendazole / Ivermectin)">
+                        </datalist>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Batch / Lot Reference</label>
+                        <input type="text" name="batch_reference" class="form-control" placeholder="e.g. BATCH-2026-X09">
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Date Administered *</label>
+                        <input type="date" name="vaccination_date" id="vaccDate" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Next Booster / Due Date</label>
+                        <input type="date" name="next_due_date" class="form-control">
+                        <div class="form-text small">Leave blank if single-dose lifetime immunization.</div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Administered By</label>
+                        <input type="text" name="administered_by" class="form-control" placeholder="e.g. Dr. Anjali Sharma" value="{{ current_user.full_name }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Initial Status</label>
+                        <select name="status" class="form-select">
+                            <option value="Completed" selected>Administered (Completed)</option>
+                            <option value="Upcoming">Scheduled for Future</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">Notes / Adverse Reaction Observations</label>
+                    <textarea name="notes" class="form-control" rows="2" placeholder="Any swelling at injection site, booster instructions..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('vaccinations.index') }}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5 rounded-pill fw-semibold shadow-sm">
+                        <i class="bi bi-save me-1"></i> Save Vaccination Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('vaccDate').value = new Date().toISOString().slice(0, 10);
+});
+</script>
+{% endblock %}

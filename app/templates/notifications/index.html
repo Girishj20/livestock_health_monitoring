@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Alerts & Notifications - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Alerts & System Notifications</h3>
+        <p class="text-muted small mb-0">Surveillance warnings, urgent clinical alarms, and scheduled herd reminders</p>
+    </div>
+    {% if unread_count > 0 %}
+    <form method="POST" action="{{ url_for('notifications.mark_all_read') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button type="submit" class="btn btn-outline-success rounded-pill px-3 py-1">
+            <i class="bi bi-check2-all me-1"></i> Mark All as Read
+        </button>
+    </form>
+    {% endif %}
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        {% if notifications %}
+        <div class="d-flex flex-column gap-3">
+            {% for n in notifications %}
+            <div class="glass-card p-3 p-md-4 border-start border-4 {% if n.priority == 'Urgent' %}border-danger bg-danger-subtle{% elif n.priority == 'High' %}border-warning{% elif not n.is_read %}border-success{% else %}border-secondary-subtle{% endif %}">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-{{ n.priority_badge_class }}-subtle text-{{ n.priority_badge_class }} border text-uppercase" style="font-size: 0.7rem;">
+                            {{ n.priority }}
+                        </span>
+                        <span class="badge bg-light text-secondary border small">{{ n.notification_type }}</span>
+                        {% if not n.is_read %}
+                        <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">New</span>
+                        {% endif %}
+                    </div>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ n.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+                </div>
+
+                <h5 class="fw-bold mb-1 {% if n.priority == 'Urgent' %}text-danger{% else %}text-dark{% endif %}">
+                    {{ n.title }}
+                </h5>
+                <p class="text-muted small mb-3">{{ n.message }}</p>
+
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <div>
+                        {% if n.link_url %}
+                        <a href="{{ n.link_url }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                            <i class="bi bi-arrow-right-circle me-1"></i> View Related Record
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% if not n.is_read %}
+                    <form method="POST" action="{{ url_for('notifications.mark_read', id=n.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="btn btn-sm btn-link text-muted text-decoration-none">
+                            <i class="bi bi-check me-1"></i> Mark as read
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-card p-5 text-center text-muted">
+            <i class="bi bi-bell-slash fs-1 text-secondary d-block mb-2"></i>
+            <h5 class="fw-bold">No Notifications</h5>
+            <p class="small mb-0">You're all caught up! High-priority clinical alerts and reminders will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

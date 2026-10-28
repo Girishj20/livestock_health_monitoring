@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Audit Trail - Admin Console{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">System Audit Trail</h3>
+        <p class="text-muted small mb-0">Immutable records of authentication events, animal modifications, and clinical records</p>
+    </div>
+    <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Admin Console
+    </a>
+</div>
+
+<div class="glass-card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Log ID</th>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target Type</th>
+                    <th>Target ID</th>
+                    <th>IP Address</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if logs %}
+                {% for l in logs %}
+                <tr>
+                    <td class="ps-4 text-muted small">#{{ l.id }}</td>
+                    <td><small class="text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+                    <td><strong>{{ l.actor_name }}</strong></td>
+                    <td><code>{{ l.action }}</code></td>
+                    <td><span class="badge bg-light text-secondary border">{{ l.entity_type }}</span></td>
+                    <td>{{ l.entity_id or '-' }}</td>
+                    <td><small class="text-muted">{{ l.ip_address or '-' }}</small></td>
+                    <td><small class="text-muted">{{ l.details or '-' }}</small></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="8" class="text-center py-5 text-muted">No audit logs recorded.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

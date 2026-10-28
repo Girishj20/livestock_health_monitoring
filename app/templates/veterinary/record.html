@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Log Veterinary Consultation - {{ animal.animal_tag }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Record Official Veterinary Consultation</h3>
+        <p class="text-muted small mb-0">Record licensed attending veterinarian's physical findings, official diagnosis, and prescribed therapies for {{ animal.animal_tag }}</p>
+    </div>
+    <a href="{{ url_for('animals.detail', id=animal.id) }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Back to Profile
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="glass-card p-4 p-md-5">
+            <form method="POST" action="{{ url_for('veterinary.record', animal_id=animal.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Consultation Reason *</label>
+                        <input type="text" name="reason" class="form-control" placeholder="e.g. Acute left hindquarter mastitis check" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Attending Doctor / Clinic Name</label>
+                        <input type="text" name="vet_name" class="form-control" placeholder="e.g. Dr. Anjali Sharma, BVSc & AH">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">Clinical Examination Findings</label>
+                    <textarea name="clinical_findings" class="form-control" rows="3" placeholder="Auscultation, palpation, temperature, mucous membrane color, rumen motility..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold text-danger">Official Veterinary Diagnosis</label>
+                    <input type="text" name="veterinarian_diagnosis" class="form-control" placeholder="e.g. Acute Clinical Coliform Mastitis">
+                    <div class="form-text small">Must be provided by a qualified licensed veterinarian. Do not substitute algorithmic predictions.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">Prescribed Treatment Protocols</label>
+                    <textarea name="treatment_notes" class="form-control" rows="3" placeholder="Interventions, fluid therapy, dressing, isolation procedures..."></textarea>
+                </div>
+
+                <!-- Optional Prescribed Medication Sub-Form -->
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-success mb-2"><i class="bi bi-capsule me-2"></i>Add Prescribed Medication (Optional)</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Medication Name</label>
+                            <input type="text" name="medication_name" class="form-control" placeholder="e.g. Ceftiofur Sodium">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Dosage & Exact Administration Instructions</label>
+                            <input type="text" name="dosage_instructions" class="form-control" placeholder="e.g. 1 intramammary tube every 24h for 3 days">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Scheduled Follow-Up Examination Date</label>
+                        <input type="date" name="follow_up_date" class="form-control">
+                        <div class="form-text small">System will automatically send follow-up reminders.</div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('animals.detail', id=animal.id) }}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5 rounded-pill fw-semibold shadow-sm">
+                        <i class="bi bi-save me-1"></i> Save Consultation Record
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

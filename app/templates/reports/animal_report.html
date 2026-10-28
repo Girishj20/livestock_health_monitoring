@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}Medical Dossier: {{ animal.animal_tag }} - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Livestock Health Dossier</h3>
+        <p class="text-muted small mb-0">Official physical report for {{ animal.animal_tag }} · Generated {{ generated_at }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button onclick="window.print()" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+            <i class="bi bi-printer me-1"></i> Print Dossier
+        </button>
+        <a href="{{ url_for('reports.animal_pdf', id=animal.id) }}" class="btn btn-danger rounded-pill px-3 py-1 shadow-sm">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+        </a>
+        <a href="{{ url_for('animals.detail', id=animal.id) }}" class="btn btn-outline-success rounded-pill px-3 py-1">
+            <i class="bi bi-arrow-left me-1"></i> Profile
+        </a>
+    </div>
+</div>
+
+<div class="glass-card p-4 p-md-5 mb-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-4 mb-4">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="brand-icon" style="width: 40px; height: 40px;"><i class="bi bi-heart-pulse-fill"></i></div>
+                <h4 class="fw-bold text-success mb-0">Livestock Health Monitoring System</h4>
+            </div>
+            <small class="text-muted">Digital Livestock Medical & Physiological Record</small>
+        </div>
+        <div class="text-end">
+            <span class="badge-status badge-{{ animal.health_badge_class }} mb-1">
+                {{ animal.health_status }}
+            </span>
+            <small class="d-block text-muted">Generated: {{ generated_at }}</small>
+        </div>
+    </div>
+
+    <!-- Animal Demographics Table -->
+    <h5 class="fw-bold text-success mb-3"><i class="bi bi-person-vcard me-2"></i>Animal Identification & Demographics</h5>
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered table-sm small">
+            <tbody>
+                <tr>
+                    <th class="bg-light w-25">Ear Tag / ID:</th>
+                    <td class="w-25 fw-bold">{{ animal.animal_tag }}</td>
+                    <th class="bg-light w-25">Name:</th>
+                    <td class="w-25">{{ animal.animal_name or 'N/A' }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Species:</th>
+                    <td class="fw-bold">{{ animal.species }}</td>
+                    <th class="bg-light">Breed:</th>
+                    <td>{{ animal.breed or 'Mixed' }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Sex / Age:</th>
+                    <td>{{ animal.sex }} · {{ animal.age_display }}</td>
+                    <th class="bg-light">Weight:</th>
+                    <td>{{ animal.weight_kg or '-' }} kg</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Production Purpose:</th>
+                    <td>{{ animal.production_purpose }}</td>
+                    <th class="bg-light">Farm / Premises:</th>
+                    <td>{{ animal.farm.farm_name if animal.farm else 'N/A' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Historical Clinical Observations -->
+    <h5 class="fw-bold text-success mb-3"><i class="bi bi-clipboard2-pulse me-2"></i>Recorded Physiological Vitals</h5>
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-striped small align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Observation Date</th>
+                    <th>Temp (°C)</th>
+                    <th>Heart Rate</th>
+                    <th>Resp Rate</th>
+                    <th>Feed / Rumination</th>
+                    <th>Reported Symptoms</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if observations %}
+                {% for o in observations %}
+                <tr>
+                    <td>{{ o.observed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td><strong>{{ o.temperature_c or '-' }}</strong></td>
+                    <td>{{ o.heart_rate_bpm or '-' }} bpm</td>
+                    <td>{{ o.respiratory_rate_bpm or '-' }} breaths</td>
+                    <td>{{ o.food_intake }}/{{ o.rumination }}</td>
+                    <td><span class="text-danger">{{ ", ".join(o.symptoms_list) or 'None' }}</span></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="6" class="text-muted text-center py-2">No observation logs found.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Official Veterinary Visits & Diagnoses -->
+    <h5 class="fw-bold text-success mb-3"><i class="bi bi-bandaid me-2"></i>Official Veterinary Consultations & Diagnoses</h5>
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Date</th>
+                    <th>Consultation Reason</th>
+                    <th>Attending Doctor</th>
+                    <th>Confirmed Diagnosis</th>
+                    <th>Prescribed Treatment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if veterinary_visits %}
+                {% for v in veterinary_visits %}
+                <tr>
+                    <td>{{ v.visit_date.strftime('%Y-%m-%d') }}</td>
+                    <td><strong>{{ v.reason }}</strong></td>
+                    <td>{{ v.attending_doctor }}</td>
+                    <td class="text-danger fw-bold">{{ v.veterinarian_diagnosis or '-' }}</td>
+                    <td>{{ v.treatment_notes or '-' }}</td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="5" class="text-muted text-center py-2">No veterinary visits recorded.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Vaccinations & Immunizations -->
+    <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i>Immunization & Preventive Care Record</h5>
+    <div class="table-responsive mb-4">
+        <table class="table table-sm table-bordered small align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Vaccine Name</th>
+                    <th>Administered Date</th>
+                    <th>Administered By</th>
+                    <th>Batch Lot</th>
+                    <th>Next Due Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if vaccinations %}
+                {% for vac in vaccinations %}
+                <tr>
+                    <td><strong>{{ vac.vaccine_name }}</strong></td>
+                    <td>{{ vac.vaccination_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ vac.administered_by or '-' }}</td>
+                    <td><code>{{ vac.batch_reference or '-' }}</code></td>
+                    <td>{{ vac.next_due_date.strftime('%Y-%m-%d') if vac.next_due_date else '-' }}</td>
+                    <td><span class="badge bg-{{ vac.status_badge_class }}">{{ vac.computed_status }}</span></td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="6" class="text-muted text-center py-2">No vaccinations recorded.</td></tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Legal Disclaimer -->
+    <div class="disclaimer-banner">
+        <small>
+            <strong>VETERINARY MEDICAL DISCLAIMER:</strong>
+            This dossier is generated by the Livestock Health Monitoring System as a decision-support record. Model risk ratings are algorithmic statistical estimates and not certified clinical diagnoses. Treatment protocols must be verified by a licensed veterinary doctor.
+        </small>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}User Profile - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-5 col-lg-4">
+        <div class="glass-card p-4 text-center">
+            <div class="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem; font-weight: bold;">
+                {{ user.full_name[:1].upper() }}
+            </div>
+            <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+            <span class="badge bg-success-subtle text-success px-3 py-1 rounded-pill mb-3 text-capitalize">
+                {{ user.role.replace('_', ' ') }}
+            </span>
+
+            <div class="text-start border-top pt-3 small text-muted">
+                <p class="mb-2"><i class="bi bi-envelope me-2 text-secondary"></i> {{ user.email }}</p>
+                <p class="mb-2"><i class="bi bi-telephone me-2 text-secondary"></i> {{ user.phone or 'No phone recorded' }}</p>
+                <p class="mb-2"><i class="bi bi-clock-history me-2 text-secondary"></i> Member since: {{ user.created_at.strftime('%b %d, %Y') }}</p>
+                <p class="mb-0"><i class="bi bi-check-circle me-2 text-success"></i> Status: <span class="badge bg-success">{{ user.account_status }}</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7 col-lg-8">
+        <!-- Update Info -->
+        <div class="glass-card p-4 mb-4">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-person-gear me-2"></i>Personal Details</h5>
+            <form method="POST" action="{{ url_for('auth.profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="update_info">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Full Name</label>
+                        <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control" value="{{ user.phone or '' }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Email Address (Immutable)</label>
+                    <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly>
+                    <div class="form-text small">Email cannot be changed directly for audit and security consistency.</div>
+                </div>
+
+                <button type="submit" class="btn btn-success px-4 rounded-pill">Save Profile Changes</button>
+            </form>
+        </div>
+
+        <!-- Change Password -->
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-lock me-2"></i>Change Password</h5>
+            <form method="POST" action="{{ url_for('auth.profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <input type="hidden" name="action" value="change_password">
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Current Password</label>
+                    <input type="password" name="current_password" class="form-control" required>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">New Password</label>
+                        <input type="password" name="new_password" class="form-control" minlength="6" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Confirm New Password</label>
+                        <input type="password" name="confirm_password" class="form-control" minlength="6" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-outline-success px-4 rounded-pill">Update Password</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

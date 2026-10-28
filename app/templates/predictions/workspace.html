@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+{% block title %}ML Disease Risk Workspace - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Machine Learning Disease Risk Assessment Workspace</h3>
+        <p class="text-muted small mb-0">Evaluate clinical parameters against species-specific Random Forest diagnostic models</p>
+    </div>
+    <a href="{{ url_for('predictions.history') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-clock-history me-1"></i> Assessment History
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 p-md-5">
+            <form method="POST" action="{{ url_for('predictions.run') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <!-- Select Animal -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">1. Select Animal for Assessment *</label>
+                    <select name="animal_id" id="predAnimalSelect" class="form-select" required onchange="handleAnimalSwitch()">
+                        <option value="">-- Choose Registered Animal --</option>
+                        {% for a in animals %}
+                        <option value="{{ a.id }}" data-species="{{ a.species }}" 
+                                {% if selected_animal and selected_animal.id == a.id %}selected{% endif %}>
+                            {{ a.animal_tag }} ({{ a.species }} · {{ a.breed or 'Mixed' }}) - {{ a.farm.farm_name if a.farm else 'Farm' }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                {% if selected_animal and latest_obs %}
+                <div class="alert alert-info py-2 px-3 small mb-4 d-flex align-items-center gap-2">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <div>
+                        Pre-loaded with latest observation recorded on <strong>{{ latest_obs.observed_at.strftime('%Y-%m-%d %H:%M') }}</strong>. You can adjust values before executing the model.
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Model Engine Notification -->
+                <div class="p-3 bg-light rounded-3 mb-4 border d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong class="text-success"><i class="bi bi-cpu me-1"></i>Target Model:</strong>
+                        <span id="activeModelLabel" class="ms-1 fw-bold">
+                            {% if selected_animal %}{{ selected_animal.species }} Specialized Classifier (v1.0.0){% else %}Species-Specific Classifier{% endif %}
+                        </span>
+                    </div>
+                    <span class="badge bg-success-subtle text-success border">Random Forest Ensemble</span>
+                </div>
+
+                <!-- Input Features Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Body Temperature (°C) *</label>
+                        <input type="number" step="0.1" name="temperature_c" class="form-control" 
+                               value="{{ latest_obs.temperature_c if latest_obs and latest_obs.temperature_c else (38.6 if not selected_animal or selected_animal.species in ('Cow','Buffalo') else 39.2) }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Heart Rate (bpm) *</label>
+                        <input type="number" step="1" name="heart_rate_bpm" class="form-control" 
+                               value="{{ latest_obs.heart_rate_bpm if latest_obs and latest_obs.heart_rate_bpm else (65 if not selected_animal or selected_animal.species in ('Cow','Buffalo') else 90) }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Respiratory Rate (breaths) *</label>
+                        <input type="number" step="1" name="respiratory_rate_bpm" class="form-control" 
+                               value="{{ latest_obs.respiratory_rate_bpm if latest_obs and latest_obs.respiratory_rate_bpm else (28 if not selected_animal or selected_animal.species in ('Cow','Buffalo') else 24) }}" required>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Food Intake *</label>
+                        <select name="food_intake" class="form-select">
+                            <option value="Normal" {% if not latest_obs or latest_obs.food_intake == 'Normal' %}selected{% endif %}>Normal</option>
+                            <option value="Reduced" {% if latest_obs and latest_obs.food_intake == 'Reduced' %}selected{% endif %}>Reduced</option>
+                            <option value="Anorexic" {% if latest_obs and latest_obs.food_intake == 'Anorexic' %}selected{% endif %}>Anorexic / Refusal</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Rumination *</label>
+                        <select name="rumination" class="form-select">
+                            <option value="Normal" {% if not latest_obs or latest_obs.rumination == 'Normal' %}selected{% endif %}>Normal (2-3 cycles/min)</option>
+                            <option value="Reduced" {% if latest_obs and latest_obs.rumination == 'Reduced' %}selected{% endif %}>Reduced / Sluggish</option>
+                            <option value="Absent" {% if latest_obs and latest_obs.rumination == 'Absent' %}selected{% endif %}>Absent / Atony</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Mobility / Walking *</label>
+                        <select name="walking_activity" class="form-select">
+                            <option value="Normal" {% if not latest_obs or latest_obs.walking_activity == 'Normal' %}selected{% endif %}>Normal</option>
+                            <option value="Sluggish" {% if latest_obs and latest_obs.walking_activity == 'Sluggish' %}selected{% endif %}>Sluggish</option>
+                            <option value="Lame" {% if latest_obs and latest_obs.walking_activity == 'Lame' %}selected{% endif %}>Lame (Limping)</option>
+                            <option value="Staggering" {% if latest_obs and latest_obs.walking_activity == 'Staggering' %}selected{% endif %}>Staggering</option>
+                            <option value="Recumbent" {% if latest_obs and latest_obs.walking_activity == 'Recumbent' %}selected{% endif %}>Recumbent (Downer)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Milk Drop (%) (if milch)</label>
+                        <input type="number" step="1" min="0" max="100" name="milk_production_drop_pct" class="form-control" placeholder="0 - 100" value="0">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Body Condition Score (1-5)</label>
+                        <input type="number" step="0.25" min="1.0" max="5.0" name="body_condition_score" class="form-control" 
+                               value="{{ latest_obs.body_condition_score if latest_obs and latest_obs.body_condition_score else 3.25 }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Current Weight (kg)</label>
+                        <input type="number" step="0.1" name="weight_kg" class="form-control" 
+                               value="{{ selected_animal.weight_kg if selected_animal and selected_animal.weight_kg else 400.0 }}">
+                    </div>
+                </div>
+
+                <!-- Symptoms Multi-Select -->
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <label class="form-label small fw-semibold mb-2">Observed Symptoms / Signs Checklist</label>
+                    <div class="row g-2">
+                        {% for sym in known_symptoms %}
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="symptoms" value="{{ sym }}" id="sym_pred_{{ loop.index }}"
+                                       {% if latest_obs and sym in latest_obs.symptoms_list %}checked{% endif %}>
+                                <label class="form-check-label small {% if 'Acute' in sym or 'Recumbent' in sym or 'Severe' in sym %}text-danger fw-bold{% endif %}" for="sym_pred_{{ loop.index }}">
+                                    {{ sym }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Legal / Clinical Warning -->
+                <div class="alert alert-warning py-2 px-3 small mb-4">
+                    <i class="bi bi-shield-exclamation me-1"></i>
+                    <strong>Clinical Safety Notice:</strong> Automated risk evaluations are informational estimates and do not replace professional veterinary examination. Severe symptoms (recumbency, acute bloat, dyspnea) automatically trigger urgent clinical flags.
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success btn-lg px-5 rounded-pill fw-semibold shadow-sm">
+                        <i class="bi bi-lightning-charge-fill me-1"></i> Generate Risk Prediction
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Side Information -->
+    <div class="col-lg-4">
+        <div class="glass-card p-4 mb-4">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-gear-wide-connected me-2"></i>How the Model Infers</h5>
+            <ol class="small text-muted ps-3 mb-3">
+                <li class="mb-2"><strong>Species-Specific Calibration:</strong> Selects dedicated pipelines for Cow, Buffalo, Goat, or Sheep.</li>
+                <li class="mb-2"><strong>Feature Standardization:</strong> Scales vitals against calibrated training bounds using Scikit-Learn standard scalers.</li>
+                <li class="mb-2"><strong>One-Hot Encoding:</strong> Encodes categorical rumination, feeding, and mobility parameters without data leakage.</li>
+                <li class="mb-2"><strong>Random Forest Classification:</strong> Synthesizes ensemble decision tree votes into calibrated probability scores.</li>
+                <li class="mb-0"><strong>Emergency Override Guardrail:</strong> Overrides statistical outputs if life-threatening critical criteria are flagged.</li>
+            </ol>
+        </div>
+
+        <div class="glass-card p-4">
+            <h6 class="fw-bold text-dark mb-2">Classifiable Conditions</h6>
+            <div class="d-flex flex-wrap gap-1">
+                <span class="badge bg-light text-dark border">Healthy / Normal</span>
+                <span class="badge bg-light text-dark border">Mastitis</span>
+                <span class="badge bg-light text-dark border">Foot & Mouth Disease</span>
+                <span class="badge bg-light text-dark border">Bovine Respiratory Disease</span>
+                <span class="badge bg-light text-dark border">Lumpy Skin Disease</span>
+                <span class="badge bg-light text-dark border">Bloat (Tympanites)</span>
+                <span class="badge bg-light text-dark border">Enterotoxemia</span>
+                <span class="badge bg-light text-dark border">Parasitic Gastroenteritis</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function handleAnimalSwitch() {
+    const sel = document.getElementById('predAnimalSelect');
+    const val = sel.value;
+    if (val) {
+        window.location.href = "{{ url_for('predictions.workspace') }}?animal_id=" + val;
+    }
+}
+</script>
+{% endblock %}

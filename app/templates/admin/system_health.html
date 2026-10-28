@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}System Health - Admin Console{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">System Health & Infrastructure Diagnostics</h3>
+        <p class="text-muted small mb-0">Operational integrity of relational database, ML models directory, and server resources</p>
+    </div>
+    <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Admin Console
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <div class="metric-icon {% if db_ok %}bg-success-subtle text-success{% else %}bg-danger-subtle text-danger{% endif %} mx-auto mb-3">
+                <i class="bi {% if db_ok %}bi-database-check{% else %}bi-database-slash{% endif %}"></i>
+            </div>
+            <h5 class="fw-bold mb-1">Database Connectivity</h5>
+            <span class="badge {% if db_ok %}bg-success{% else %}bg-danger{% endif %} px-3 py-1 rounded-pill mb-2">
+                {{ 'OPERATIONAL' if db_ok else 'FAILURE' }}
+            </span>
+            <p class="small text-muted mb-0">SQLAlchemy ORM engine connection and query responsiveness verified.</p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <div class="metric-icon {% if models_ok %}bg-success-subtle text-success{% else %}bg-warning-subtle text-warning{% endif %} mx-auto mb-3">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h5 class="fw-bold mb-1">ML Pipeline Artifacts</h5>
+            <span class="badge {% if models_ok %}bg-success{% else %}bg-warning{% endif %} px-3 py-1 rounded-pill mb-2">
+                {{ 'ACTIVE & LOADED' if models_ok else 'MISSING ARTIFACTS' }}
+            </span>
+            <p class="small text-muted mb-0">Directory: <code>{{ models_dir }}</code></p>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            <div class="metric-icon bg-info-subtle text-info mx-auto mb-3">
+                <i class="bi bi-hdd-rack"></i>
+            </div>
+            <h5 class="fw-bold mb-1">Host Storage Capacity</h5>
+            <span class="badge bg-info px-3 py-1 rounded-pill mb-2">
+                {{ disk_free_gb }} GB Free
+            </span>
+            <p class="small text-muted mb-0">Local server volume capacity for datasets, uploads, and backups.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

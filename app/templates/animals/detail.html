@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+{% block title %}{{ animal.animal_tag }} Profile - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<!-- Top Header & Actions -->
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h3 class="fw-bold text-success mb-0">{{ animal.animal_tag }}</h3>
+            <span class="badge-status badge-{{ animal.health_badge_class }}">
+                <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> {{ animal.health_status }}
+            </span>
+            <span class="badge bg-light text-secondary border">{{ animal.status }}</span>
+        </div>
+        <p class="text-muted small mb-0">{{ animal.species }} · {{ animal.breed or 'Mixed Breed' }} · {{ animal.farm.farm_name if animal.farm else 'Farm' }}</p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ url_for('observations.record', animal_id=animal.id) }}" class="btn btn-outline-success rounded-pill px-3 py-1">
+            <i class="bi bi-plus-circle me-1"></i> Record Vitals
+        </a>
+        <a href="{{ url_for('predictions.workspace', animal_id=animal.id) }}" class="btn btn-outline-primary rounded-pill px-3 py-1">
+            <i class="bi bi-cpu me-1"></i> Run Risk Assessment
+        </a>
+        <a href="{{ url_for('veterinary.record', animal_id=animal.id) }}" class="btn btn-outline-warning rounded-pill px-3 py-1">
+            <i class="bi bi-bandaid me-1"></i> Log Vet Visit
+        </a>
+        <div class="dropdown">
+            <button class="btn btn-light rounded-pill px-3 py-1 border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                More Actions
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                <li><a class="dropdown-item" href="{{ url_for('reports.animal_report', id=animal.id) }}"><i class="bi bi-file-earmark-text me-2"></i> View Health Dossier</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('reports.animal_pdf', id=animal.id) }}"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i> Download PDF Report</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('animals.edit', id=animal.id) }}"><i class="bi bi-pencil me-2 text-secondary"></i> Edit Details</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form method="POST" action="{{ url_for('animals.archive', id=animal.id) }}" onsubmit="return confirm('Archive this animal record?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                        <button type="submit" class="dropdown-item text-danger"><i class="bi bi-archive me-2"></i> Archive Animal</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Profile Card & Quick Vitals -->
+    <div class="col-lg-4">
+        <!-- Profile Card -->
+        <div class="glass-card p-4 mb-4 text-center">
+            <div class="mx-auto mb-3" style="width: 140px; height: 140px;">
+                {% if animal.image_path %}
+                <img src="{{ url_for('static', filename=animal.image_path) }}" alt="{{ animal.animal_tag }}" class="animal-avatar-lg w-100 h-100">
+                {% else %}
+                <div class="w-100 h-100 rounded-4 bg-light border d-flex align-items-center justify-content-center text-secondary display-4">
+                    <i class="bi bi-image"></i>
+                </div>
+                {% endif %}
+            </div>
+
+            <h4 class="fw-bold mb-1">{{ animal.animal_tag }}</h4>
+            {% if animal.animal_name %}
+            <h6 class="text-muted fw-normal mb-3">"{{ animal.animal_name }}"</h6>
+            {% endif %}
+
+            <div class="text-start border-top pt-3 small">
+                <div class="row py-1">
+                    <div class="col-5 text-muted">Species:</div>
+                    <div class="col-7 fw-semibold">{{ animal.species }}</div>
+                </div>
+                <div class="row py-1">
+                    <div class="col-5 text-muted">Breed:</div>
+                    <div class="col-7 fw-semibold">{{ animal.breed or 'N/A' }}</div>
+                </div>
+                <div class="row py-1">
+                    <div class="col-5 text-muted">Sex / Age:</div>
+                    <div class="col-7 fw-semibold">{{ animal.sex }} · {{ animal.age_display }}</div>
+                </div>
+                <div class="row py-1">
+                    <div class="col-5 text-muted">Weight:</div>
+                    <div class="col-7 fw-semibold">{% if animal.weight_kg %}{{ animal.weight_kg }} kg{% else %}Unrecorded{% endif %}</div>
+                </div>
+                <div class="row py-1">
+                    <div class="col-5 text-muted">Purpose:</div>
+                    <div class="col-7 fw-semibold">{{ animal.production_purpose }}</div>
+                </div>
+                <div class="row py-1">
+                    <div class="col-5 text-muted">Farm:</div>
+                    <div class="col-7 fw-semibold">{{ animal.farm.farm_name if animal.farm else 'N/A' }}</div>
+                </div>
+                {% if animal.notes %}
+                <div class="mt-2 pt-2 border-top text-muted">
+                    <strong class="d-block text-dark">Notes:</strong>
+                    {{ animal.notes }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Latest Vitals Quick Summary -->
+        <div class="glass-card p-4 mb-4">
+            <h6 class="fw-bold text-success mb-3"><i class="bi bi-activity me-2"></i>Latest Measured Vitals</h6>
+            {% if animal.latest_observation %}
+            {% set lo = animal.latest_observation %}
+            <div class="row g-2 text-center">
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded-3 border">
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">Temp</small>
+                        <strong class="fs-6">{{ lo.temperature_c or '-' }}</strong>
+                        <small class="text-muted d-block" style="font-size: 0.7rem;">°C</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded-3 border">
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">Heart Rate</small>
+                        <strong class="fs-6">{{ lo.heart_rate_bpm or '-' }}</strong>
+                        <small class="text-muted d-block" style="font-size: 0.7rem;">bpm</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-2 bg-light rounded-3 border">
+                        <small class="text-muted d-block" style="font-size: 0.75rem;">Resp Rate</small>
+                        <strong class="fs-6">{{ lo.respiratory_rate_bpm or '-' }}</strong>
+                        <small class="text-muted d-block" style="font-size: 0.7rem;">breaths</small>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-3 small text-muted">
+                <div><strong>Recorded:</strong> {{ lo.observed_at.strftime('%b %d, %Y %H:%M') }}</div>
+                <div><strong>Rumination:</strong> {{ lo.rumination or 'Normal' }} · <strong>Feed:</strong> {{ lo.food_intake or 'Normal' }}</div>
+                {% if lo.symptoms_list %}
+                <div class="mt-1 text-danger"><strong>Symptoms:</strong> {{ ", ".join(lo.symptoms_list) }}</div>
+                {% endif %}
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">No health observations recorded yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Latest Disease Risk Assessment -->
+        <div class="glass-card p-4">
+            <h6 class="fw-bold text-info mb-3"><i class="bi bi-cpu me-2"></i>Latest ML Risk Assessment</h6>
+            {% if animal.latest_assessment %}
+            {% set la = animal.latest_assessment %}
+            <div class="p-3 bg-light rounded-3 border mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold">{{ la.predicted_class }}</span>
+                    <span class="badge bg-{{ la.risk_badge_class }}-subtle text-{{ la.risk_badge_class }} border">
+                        {{ la.risk_level }} Risk
+                    </span>
+                </div>
+                <small class="text-muted d-block">Model: {{ la.model_name }} ({{ la.model_version }})</small>
+                <small class="text-muted d-block">Assessed on {{ la.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+            </div>
+            <a href="{{ url_for('predictions.detail', id=la.id) }}" class="btn btn-sm btn-outline-info w-100 rounded-pill">
+                View Full Assessment Details
+            </a>
+            {% else %}
+            <p class="text-muted small mb-0">No automated assessments recorded for this animal yet.</p>
+            <a href="{{ url_for('predictions.workspace', animal_id=animal.id) }}" class="btn btn-sm btn-outline-primary mt-2 rounded-pill">
+                Run First Assessment
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Vitals Chart, Timeline & Medical History -->
+    <div class="col-lg-8">
+        <!-- Vitals Historical Trends Chart -->
+        <div class="glass-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0 text-success"><i class="bi bi-graph-up me-2"></i>Vital Signs Trends</h5>
+                <span class="badge bg-light text-muted border">Temperature & Respiration</span>
+            </div>
+            <div style="height: 250px; position: relative;">
+                <canvas id="vitalsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Tabs for History Records -->
+        <div class="glass-card p-4">
+            <ul class="nav nav-pills mb-3 border-bottom pb-2" id="animalTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active btn-sm" id="obs-tab" data-bs-toggle="tab" data-bs-target="#tab-obs" type="button">
+                        <i class="bi bi-clipboard2-pulse me-1"></i> Observations ({{ observations|length }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link btn-sm" id="visits-tab" data-bs-toggle="tab" data-bs-target="#tab-visits" type="button">
+                        <i class="bi bi-bandaid me-1"></i> Vet Visits ({{ visits|length }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link btn-sm" id="meds-tab" data-bs-toggle="tab" data-bs-target="#tab-meds" type="button">
+                        <i class="bi bi-capsule me-1"></i> Medications ({{ medications|length }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link btn-sm" id="vacs-tab" data-bs-toggle="tab" data-bs-target="#tab-vacs" type="button">
+                        <i class="bi bi-shield-plus me-1"></i> Vaccines ({{ vaccinations|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="animalTabsContent">
+                <!-- Observations Tab -->
+                <div class="tab-pane fade show active" id="tab-obs">
+                    {% if observations %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Temp</th>
+                                    <th>Heart</th>
+                                    <th>Resp</th>
+                                    <th>Feed/Ruminate</th>
+                                    <th>Symptoms</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for o in observations %}
+                                <tr>
+                                    <td><small class="text-muted">{{ o.observed_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                                    <td>{{ o.temperature_c or '-' }}°C</td>
+                                    <td>{{ o.heart_rate_bpm or '-' }} bpm</td>
+                                    <td>{{ o.respiratory_rate_bpm or '-' }}</td>
+                                    <td><small>{{ o.food_intake }}/{{ o.rumination }}</small></td>
+                                    <td><small class="text-danger">{{ ", ".join(o.symptoms_list) or 'None' }}</small></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small py-3 mb-0">No health observations logged yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Vet Visits Tab -->
+                <div class="tab-pane fade" id="tab-visits">
+                    {% if visits %}
+                    {% for v in visits %}
+                    <div class="p-3 bg-light rounded-3 border mb-2">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <h6 class="fw-bold mb-0 text-success">{{ v.reason }}</h6>
+                            <small class="text-muted">{{ v.visit_date.strftime('%b %d, %Y') }}</small>
+                        </div>
+                        <div class="small mb-1"><strong>Doctor:</strong> {{ v.attending_doctor }}</div>
+                        {% if v.veterinarian_diagnosis %}
+                        <div class="small text-danger mb-1"><strong>Diagnosis:</strong> {{ v.veterinarian_diagnosis }}</div>
+                        {% endif %}
+                        {% if v.treatment_notes %}
+                        <div class="small text-muted"><strong>Treatment:</strong> {{ v.treatment_notes }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted small py-3 mb-0">No veterinary visits recorded yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Medications Tab -->
+                <div class="tab-pane fade" id="tab-meds">
+                    {% if medications %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Medication</th>
+                                    <th>Dosage / Instructions</th>
+                                    <th>Period</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in medications %}
+                                <tr>
+                                    <td class="fw-bold">{{ m.medication_name }}</td>
+                                    <td><small>{{ m.dosage_instructions }}</small></td>
+                                    <td><small class="text-muted">{{ m.start_date.strftime('%b %d') }} - {{ m.end_date.strftime('%b %d') if m.end_date else 'Ongoing' }}</small></td>
+                                    <td><span class="badge bg-success-subtle text-success">{{ m.status }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small py-3 mb-0">No active or historical medications recorded.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Vaccinations Tab -->
+                <div class="tab-pane fade" id="tab-vacs">
+                    {% if vaccinations %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Vaccine</th>
+                                    <th>Given Date</th>
+                                    <th>Next Due</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vac in vaccinations %}
+                                <tr>
+                                    <td class="fw-bold">{{ vac.vaccine_name }}</td>
+                                    <td><small class="text-muted">{{ vac.vaccination_date.strftime('%b %d, %Y') }}</small></td>
+                                    <td><small class="text-muted">{{ vac.next_due_date.strftime('%b %d, %Y') if vac.next_due_date else 'N/A' }}</small></td>
+                                    <td><span class="badge bg-{{ vac.status_badge_class }}">{{ vac.computed_status }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small py-3 mb-0">No vaccinations recorded for this animal.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Fetch and render historical vitals via JSON API
+    fetch("{{ url_for('observations.api_vitals', id=animal.id) }}")
+        .then(res => res.json())
+        .then(data => {
+            const ctx = document.getElementById('vitalsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.labels.length > 0 ? data.labels : ['No data'],
+                    datasets: [
+                        {
+                            label: 'Temperature (°C)',
+                            data: data.temperatures,
+                            borderColor: '#e11d48',
+                            backgroundColor: 'rgba(225, 29, 72, 0.1)',
+                            tension: 0.3,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Respiratory Rate (breaths/min)',
+                            data: data.respiratory_rates,
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                            tension: 0.3,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'Temp (°C)' },
+                            suggestedMin: 36,
+                            suggestedMax: 42
+                        },
+                        y1: {
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'Resp Rate' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(() => {});
+});
+</script>
+{% endblock %}

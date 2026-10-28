@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Prediction History - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Disease Risk Assessment History</h3>
+        <p class="text-muted small mb-0">Audit log of all machine learning inferences, input snapshots, and clinical evaluations</p>
+    </div>
+    <a href="{{ url_for('predictions.workspace') }}" class="btn btn-success rounded-pill px-3 py-1 shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> New Assessment
+    </a>
+</div>
+
+<div class="glass-card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Assessment ID</th>
+                    <th>Animal</th>
+                    <th>Species</th>
+                    <th>Estimated Condition</th>
+                    <th>Risk Tier</th>
+                    <th>Model Version</th>
+                    <th>Assessed Date</th>
+                    <th class="text-end pe-4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if assessments %}
+                {% for a in assessments %}
+                <tr>
+                    <td class="ps-4 fw-bold text-secondary">#{{ a.id }}</td>
+                    <td>
+                        <a href="{{ url_for('animals.detail', id=a.animal_id) }}" class="fw-bold text-success text-decoration-none">
+                            {{ a.animal.animal_tag if a.animal else 'N/A' }}
+                        </a>
+                    </td>
+                    <td>{{ a.animal.species if a.animal else 'N/A' }}</td>
+                    <td><strong class="text-dark">{{ a.predicted_class }}</strong></td>
+                    <td>
+                        <span class="badge bg-{{ a.risk_badge_class }}-subtle text-{{ a.risk_badge_class }} border">
+                            {{ a.risk_level }}
+                        </span>
+                        {% if a.urgency_override %}
+                        <span class="badge bg-danger ms-1" title="Urgent Override"><i class="bi bi-exclamation-triangle"></i></span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ a.model_version }}</small></td>
+                    <td><small class="text-muted">{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</small></td>
+                    <td class="text-end pe-4">
+                        <a href="{{ url_for('predictions.detail', id=a.id) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                            View Result
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        No machine learning risk assessments recorded yet.
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

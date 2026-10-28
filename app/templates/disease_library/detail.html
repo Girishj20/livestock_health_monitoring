@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ disease.disease_name }} - Disease Reference Guide{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h3 class="fw-bold text-success mb-0">{{ disease.disease_name }}</h3>
+            <span class="badge bg-success-subtle text-success border">{{ disease.category }}</span>
+        </div>
+        <p class="text-muted small mb-0">Applicable Species: {{ disease.applicable_species }}</p>
+    </div>
+    <a href="{{ url_for('disease_library.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Back to Reference Library
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Overview & Description -->
+        <div class="glass-card p-4 p-md-5 mb-4">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-journal-medical me-2"></i>Clinical Description</h5>
+            <p class="text-muted lead" style="font-size: 1.05rem;">
+                {{ disease.description }}
+            </p>
+
+            <hr class="my-4">
+
+            <!-- Warning Signs -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Commonly Observed Warning Signs</h5>
+                <div class="p-3 bg-danger-subtle rounded-3 border border-danger-subtle text-dark">
+                    {{ disease.warning_signs }}
+                </div>
+            </div>
+
+            <!-- When to Call the Vet -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-warning mb-2"><i class="bi bi-telephone-inbound-fill me-2"></i>When Veterinary Intervention is Critical</h5>
+                <div class="p-3 bg-warning-subtle rounded-3 border border-warning-subtle text-dark">
+                    {{ disease.when_to_call_vet }}
+                </div>
+            </div>
+
+            <!-- Prevention Information -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-success mb-2"><i class="bi bi-shield-check me-2"></i>General Prevention Protocols</h5>
+                <p class="text-muted">
+                    {{ disease.prevention_information }}
+                </p>
+            </div>
+
+            <!-- Biosecurity Considerations -->
+            {% if disease.biosecurity_considerations %}
+            <div class="mb-4">
+                <h5 class="fw-bold text-primary mb-2"><i class="bi bi-lock-fill me-2"></i>Biosecurity & Quarantine Measures</h5>
+                <p class="text-muted">
+                    {{ disease.biosecurity_considerations }}
+                </p>
+            </div>
+            {% endif %}
+
+            <div class="mt-4 pt-3 border-top small text-muted d-flex justify-content-between align-items-center">
+                <span><strong>Reference Citation:</strong> {{ disease.veterinary_reference }}</span>
+                <span><strong>Reviewed:</strong> {{ disease.reviewed_at.strftime('%B %d, %Y') if disease.reviewed_at else 'Verified' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="glass-card p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-robot me-2 text-info"></i>Related Decision-Support Tools</h6>
+            <p class="small text-muted mb-3">
+                If an animal in your herd exhibits these indicators, evaluate their vital signs in our ML Risk Assessment workspace.
+            </p>
+            <a href="{{ url_for('predictions.workspace') }}" class="btn btn-outline-primary w-100 rounded-pill mb-2">
+                <i class="bi bi-cpu me-1"></i> Open Prediction Workspace
+            </a>
+            <a href="{{ url_for('observations.record') }}" class="btn btn-outline-success w-100 rounded-pill">
+                <i class="bi bi-clipboard2-pulse me-1"></i> Record Health Vitals
+            </a>
+        </div>
+
+        <div class="disclaimer-banner">
+            <strong class="d-block mb-1 text-warning"><i class="bi bi-shield-exclamation me-1"></i> Educational Resource</strong>
+            <p class="small mb-0">
+                This library provides educational reference material. Always verify diagnoses and treatment protocols with a licensed veterinary medical officer.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

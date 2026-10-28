@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}System Standards & Settings - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">System Standards & Veterinary Configuration</h3>
+        <p class="text-muted small mb-0">Physiological reference thresholds, clinical warning bounds, and measurement standards</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Measurement Units & Standards -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-rulers me-2"></i>Measurement Units & Notation Standards</h5>
+            <div class="table-responsive small">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Measurement Unit</th>
+                            <th>Standard Precision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Rectal Temperature</td><td>Celsius (°C)</td><td>1 decimal (0.1 °C)</td></tr>
+                        <tr><td>Heart Rate</td><td>Beats Per Minute (bpm)</td><td>Integer</td></tr>
+                        <tr><td>Respiratory Rate</td><td>Breaths Per Minute</td><td>Integer</td></tr>
+                        <tr><td>Animal Live Weight</td><td>Kilograms (kg)</td><td>1 decimal (0.1 kg)</td></tr>
+                        <tr><td>Daily Milk Yield</td><td>Liters (L/day)</td><td>1 decimal (0.1 L)</td></tr>
+                        <tr><td>Body Condition Score</td><td>Scale (1.0 to 5.0)</td><td>0.25 intervals</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Species Physiological Reference Intervals -->
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i>Veterinary Reference Thresholds</h5>
+            <div class="table-responsive small">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Species</th>
+                            <th>Normal Temp</th>
+                            <th>Normal Pulse</th>
+                            <th>Normal Resp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Cattle (Cow)</strong></td><td>38.0 - 39.3 °C</td><td>48 - 84 bpm</td><td>24 - 40 /min</td></tr>
+                        <tr><td><strong>Buffalo</strong></td><td>37.5 - 39.0 °C</td><td>40 - 70 bpm</td><td>15 - 30 /min</td></tr>
+                        <tr><td><strong>Goat</strong></td><td>38.5 - 40.0 °C</td><td>70 - 120 bpm</td><td>15 - 30 /min</td></tr>
+                        <tr><td><strong>Sheep</strong></td><td>38.5 - 40.0 °C</td><td>70 - 100 bpm</td><td>16 - 34 /min</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-warning p-2 small mb-0">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> Critical limits: Temp &gt; 41.0°C or &lt; 37.0°C trigger urgent alerts.
+            </div>
+        </div>
+    </div>
+
+    <!-- Role-Based Permissions Policy Matrix -->
+    <div class="col-12">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-key-fill me-2"></i>Role-Based Access Control (RBAC) Permissions Matrix</h5>
+            <div class="table-responsive small">
+                <table class="table table-bordered text-center align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="text-start">Feature / Module</th>
+                            <th>Farmer / Owner</th>
+                            <th>Farm Manager</th>
+                            <th>Veterinarian</th>
+                            <th>Administrator</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-start">Animal Herd Registration & Editing</td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i> (Own farm)</td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i> (Assigned farm)</td>
+                            <td><i class="bi bi-eye text-primary"></i> (Read only)</td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i> (System-wide)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Record Physiological Vitals</td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Run ML Disease Risk Assessments</td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Official Clinical Diagnosis & Prescriptions</td>
+                            <td><i class="bi bi-x-circle text-danger"></i> (Restricted)</td>
+                            <td><i class="bi bi-x-circle text-danger"></i> (Restricted)</td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i> (Full authority)</td>
+                            <td><i class="bi bi-eye text-primary"></i></td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">User & Account Suspension Management</td>
+                            <td><i class="bi bi-x-circle text-danger"></i></td>
+                            <td><i class="bi bi-x-circle text-danger"></i></td>
+                            <td><i class="bi bi-x-circle text-danger"></i></td>
+                            <td><i class="bi bi-check-circle-fill text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

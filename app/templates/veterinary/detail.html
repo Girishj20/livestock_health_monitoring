@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Consultation Record #{{ visit.id }} - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Veterinary Consultation Dossier</h3>
+        <p class="text-muted small mb-0">Record #{{ visit.id }} for {{ animal.animal_tag }} on {{ visit.visit_date.strftime('%B %d, %Y') }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('animals.detail', id=animal.id) }}" class="btn btn-outline-success rounded-pill px-3 py-1">
+            <i class="bi bi-person-badge me-1"></i> Animal Profile
+        </a>
+        <a href="{{ url_for('veterinary.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+            <i class="bi bi-arrow-left me-1"></i> Consultations List
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 p-md-5">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                <div>
+                    <span class="text-muted small d-block">Consultation Reason</span>
+                    <h4 class="fw-bold text-success mb-0">{{ visit.reason }}</h4>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-light text-secondary border px-3 py-2">
+                        <i class="bi bi-calendar-check me-1"></i> {{ visit.visit_date.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted d-block">Attending Doctor / Clinic</small>
+                        <strong class="fs-6">{{ visit.attending_doctor }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded-3 border">
+                        <small class="text-muted d-block">Follow-Up Date</small>
+                        <strong class="fs-6 text-primary">
+                            {{ visit.follow_up_date.strftime('%B %d, %Y') if visit.follow_up_date else 'No follow-up required' }}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h6 class="fw-bold text-muted small text-uppercase">Clinical Findings</h6>
+                <div class="p-3 bg-light rounded-3 border">
+                    {{ visit.clinical_findings or 'No detailed physical exam findings documented.' }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h6 class="fw-bold text-danger small text-uppercase">Confirmed Veterinary Diagnosis</h6>
+                <div class="p-3 bg-danger-subtle rounded-3 border border-danger-subtle text-dark fw-bold">
+                    {{ visit.veterinarian_diagnosis or 'Unconfirmed / Symptomatic Diagnosis' }}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h6 class="fw-bold text-muted small text-uppercase">Prescribed Treatment Protocols</h6>
+                <div class="p-3 bg-light rounded-3 border">
+                    {{ visit.treatment_notes or 'Supportive therapy only.' }}
+                </div>
+            </div>
+
+            {% if visit.medications %}
+            <div class="mb-4">
+                <h6 class="fw-bold text-success small text-uppercase mb-2">Prescribed Medications</h6>
+                <ul class="list-group list-group-flush">
+                    {% for m in visit.medications %}
+                    <li class="list-group-item px-0">
+                        <strong>{{ m.medication_name }}</strong>: {{ m.dosage_instructions }}
+                        <small class="text-muted d-block">Period: {{ m.start_date.strftime('%b %d') }} to {{ m.end_date.strftime('%b %d') if m.end_date else 'End of course' }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="disclaimer-banner">
+                <i class="bi bi-info-circle-fill me-1 text-primary"></i>
+                Official veterinary consultation records are permanent medical files that cannot be edited by farm personnel to maintain integrity.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

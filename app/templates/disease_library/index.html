@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Disease Reference Library - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Livestock Disease Reference Library</h3>
+        <p class="text-muted small mb-0">Evidence-based veterinary reference manual, biosecurity guides, and clinical protocols</p>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="glass-card p-3 mb-4">
+    <form method="GET" action="{{ url_for('disease_library.index') }}" class="row g-2 align-items-center">
+        <div class="col-md-5">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" name="search" class="form-control" placeholder="Search condition name..." value="{{ search }}">
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <select name="species" class="form-select form-select-sm">
+                <option value="All" {% if selected_species == 'All' %}selected{% endif %}>All Species</option>
+                <option value="Cow" {% if selected_species == 'Cow' %}selected{% endif %}>Cattle (Cow)</option>
+                <option value="Buffalo" {% if selected_species == 'Buffalo' %}selected{% endif %}>Buffalo</option>
+                <option value="Goat" {% if selected_species == 'Goat' %}selected{% endif %}>Goat</option>
+                <option value="Sheep" {% if selected_species == 'Sheep' %}selected{% endif %}>Sheep</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select name="category" class="form-select form-select-sm">
+                <option value="All" {% if selected_category == 'All' %}selected{% endif %}>All Pathogen Categories</option>
+                <option value="Bacterial" {% if selected_category == 'Bacterial' %}selected{% endif %}>Bacterial</option>
+                <option value="Viral" {% if selected_category == 'Viral' %}selected{% endif %}>Viral</option>
+                <option value="Parasitic" {% if selected_category == 'Parasitic' %}selected{% endif %}>Parasitic</option>
+                <option value="Metabolic" {% if selected_category == 'Metabolic' %}selected{% endif %}>Metabolic</option>
+                <option value="Multifactorial" {% if selected_category == 'Multifactorial' %}selected{% endif %}>Multifactorial</option>
+            </select>
+        </div>
+
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-sm btn-success w-100 rounded-pill">Filter</button>
+        </div>
+    </form>
+</div>
+
+<!-- Disease Cards Grid -->
+<div class="row g-4">
+    {% if diseases %}
+    {% for d in diseases %}
+    <div class="col-md-6 col-lg-4">
+        <div class="glass-card p-4 h-100 d-flex flex-direction-column justify-content-between">
+            <div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge bg-success-subtle text-success border">{{ d.category }}</span>
+                    <small class="text-muted" style="font-size: 0.75rem;">{{ d.applicable_species }}</small>
+                </div>
+                <h5 class="fw-bold text-dark mb-2">{{ d.disease_name }}</h5>
+                <p class="text-muted small mb-3" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                    {{ d.description }}
+                </p>
+
+                <div class="mb-3 small">
+                    <strong class="text-danger d-block mb-1"><i class="bi bi-exclamation-circle me-1"></i>Key Warning Signs:</strong>
+                    <div class="text-muted" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        {{ d.warning_signs }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                <small class="text-muted" style="font-size: 0.725rem;">Reviewed: {{ d.reviewed_at.strftime('%b %Y') if d.reviewed_at else 'Verified' }}</small>
+                <a href="{{ url_for('disease_library.detail', id=d.id) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                    Read Guide <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-book fs-1 d-block mb-2"></i>
+        No disease entries match your current search query.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

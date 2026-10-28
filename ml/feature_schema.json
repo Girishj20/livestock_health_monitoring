@@ -1,0 +1,54 @@
+{
+  "numerical_features": [
+    "age_months",
+    "weight_kg",
+    "temperature_c",
+    "heart_rate_bpm",
+    "respiratory_rate_bpm",
+    "milk_production_drop_pct",
+    "body_condition_score",
+    "fever_flag",
+    "coughing_flag",
+    "nasal_discharge_flag",
+    "diarrhea_flag",
+    "lameness_flag",
+    "swelling_flag",
+    "skin_lesions_flag",
+    "bloat_distension_flag",
+    "abnormal_milk_flag"
+  ],
+  "categorical_features": [
+    "species",
+    "food_intake",
+    "water_intake",
+    "rumination",
+    "walking_activity"
+  ],
+  "target_column": "disease_risk",
+  "classes": [
+    "Healthy / Normal",
+    "Mastitis",
+    "Foot and Mouth Disease (FMD)",
+    "Bovine Respiratory Disease / Pneumonia",
+    "Lumpy Skin Disease (LSD)",
+    "Bloat (Tympanites)",
+    "Enterotoxemia / GI Infection",
+    "Parasitic Gastroenteritis"
+  ],
+  "risk_mapping": {
+    "Healthy / Normal": "Normal",
+    "Mastitis": "Moderate",
+    "Foot and Mouth Disease (FMD)": "High",
+    "Bovine Respiratory Disease / Pneumonia": "High",
+    "Lumpy Skin Disease (LSD)": "High",
+    "Bloat (Tympanites)": "Critical",
+    "Enterotoxemia / GI Infection": "High",
+    "Parasitic Gastroenteritis": "Moderate"
+  },
+  "species_supported": [
+    "Cow",
+    "Buffalo",
+    "Goat",
+    "Sheep"
+  ]
+}

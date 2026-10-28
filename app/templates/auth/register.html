@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Register Account - Livestock Health System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-7 col-lg-6">
+        <div class="glass-card p-4 p-md-5">
+            <div class="text-center mb-4">
+                <div class="brand-icon mx-auto mb-3" style="width: 54px; height: 54px; font-size: 1.6rem;">
+                    <i class="bi bi-person-plus-fill"></i>
+                </div>
+                <h3 class="fw-bold text-success">Create Account</h3>
+                <p class="text-muted small">Join the centralized livestock monitoring & risk management network</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Full Name *</label>
+                        <input type="text" name="full_name" class="form-control" placeholder="Ramesh Patel" value="{{ full_name or '' }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Email Address *</label>
+                        <input type="email" name="email" class="form-control" placeholder="ramesh@farms.com" value="{{ email or '' }}" required>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">User Role *</label>
+                        <select name="role" id="userRole" class="form-select" required onchange="toggleFarmFields()">
+                            <option value="farmer">Farmer / Livestock Owner</option>
+                            <option value="veterinarian">Veterinarian / Clinical Doctor</option>
+                            <option value="farm_manager">Farm Manager / Supervisor</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Phone Number</label>
+                        <input type="tel" name="phone" class="form-control" placeholder="+91 98765 43210" value="{{ phone or '' }}">
+                    </div>
+                </div>
+
+                <!-- Farm details section (shown for farmers / farm managers) -->
+                <div id="farmDetailsSection" class="p-3 bg-light rounded-3 mb-3 border">
+                    <h6 class="fw-bold small text-muted mb-2"><i class="bi bi-buildings text-success me-1"></i> Default Farm Details</h6>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label small">Farm Name</label>
+                            <input type="text" name="farm_name" class="form-control" placeholder="Surya Dairy Farm" value="{{ farm_name or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Location / District</label>
+                            <input type="text" name="farm_location" class="form-control" placeholder="Anand, Gujarat">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Password *</label>
+                        <input type="password" name="password" class="form-control" placeholder="Min. 6 characters" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Confirm Password *</label>
+                        <input type="password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 rounded-pill fw-semibold shadow-sm">
+                    <i class="bi bi-check-circle me-1"></i> Complete Registration
+                </button>
+            </form>
+
+            <div class="text-center mt-4 pt-3 border-top">
+                <p class="small text-muted mb-0">Already registered? <a href="{{ url_for('auth.login') }}" class="text-success fw-bold text-decoration-none">Sign In</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleFarmFields() {
+    const role = document.getElementById('userRole').value;
+    const section = document.getElementById('farmDetailsSection');
+    if (role === 'veterinarian') {
+        section.style.display = 'none';
+    } else {
+        section.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

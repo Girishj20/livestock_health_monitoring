@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Vaccinations & Preventive Schedules - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Vaccination & Preventive Care Ledger</h3>
+        <p class="text-muted small mb-0">Track immunization history, batch numbers, booster schedules, and overdue alerts</p>
+    </div>
+    <a href="{{ url_for('vaccinations.record') }}" class="btn btn-success rounded-pill px-3 py-1 shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> Record Vaccination
+    </a>
+</div>
+
+<!-- Tabs for Pending / Completed -->
+<div class="glass-card p-4">
+    <ul class="nav nav-pills mb-4" id="vaccTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active btn-sm" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#tab-upcoming" type="button">
+                <i class="bi bi-clock-history me-1"></i> Due & Upcoming Reminders ({{ upcoming|length }})
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link btn-sm" id="completed-tab" data-bs-toggle="tab" data-bs-target="#tab-completed" type="button">
+                <i class="bi bi-check2-all me-1"></i> Completed Immunizations ({{ completed|length }})
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="vaccTabsContent">
+        <!-- Upcoming & Due Tab -->
+        <div class="tab-pane fade show active" id="tab-upcoming">
+            {% if upcoming %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Animal Tag</th>
+                            <th>Species</th>
+                            <th>Vaccine / Preventive</th>
+                            <th>Last Given</th>
+                            <th>Next Due Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in upcoming %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('animals.detail', id=v.animal_id) }}" class="fw-bold text-success text-decoration-none">
+                                    {{ v.animal.animal_tag if v.animal else 'N/A' }}
+                                </a>
+                            </td>
+                            <td>{{ v.animal.species if v.animal else 'N/A' }}</td>
+                            <td><strong class="text-dark">{{ v.vaccine_name }}</strong></td>
+                            <td><small class="text-muted">{{ v.vaccination_date.strftime('%Y-%m-%d') }}</small></td>
+                            <td>
+                                <strong class="{% if v.computed_status == 'Overdue' %}text-danger{% elif v.computed_status == 'Due Today' %}text-warning{% else %}text-primary{% endif %}">
+                                    {{ v.next_due_date.strftime('%b %d, %Y') if v.next_due_date else 'N/A' }}
+                                </strong>
+                            </td>
+                            <td>
+                                <span class="badge-status badge-{{ v.status_badge_class }}">
+                                    <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> {{ v.computed_status }}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ url_for('vaccinations.update_status', id=v.id) }}" class="d-inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                    <input type="hidden" name="status" value="Completed">
+                                    <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                        <i class="bi bi-check2"></i> Mark Given
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="bi bi-shield-check fs-1 text-success d-block mb-2"></i>
+                All herd vaccinations are up to date! No pending boosters due.
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Completed Tab -->
+        <div class="tab-pane fade" id="tab-completed">
+            {% if completed %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Animal Tag</th>
+                            <th>Vaccine / Preventive</th>
+                            <th>Date Administered</th>
+                            <th>Administered By</th>
+                            <th>Batch Reference</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for v in completed %}
+                        <tr>
+                            <td>
+                                <a href="{{ url_for('animals.detail', id=v.animal_id) }}" class="fw-bold text-success text-decoration-none">
+                                    {{ v.animal.animal_tag if v.animal else 'N/A' }}
+                                </a>
+                            </td>
+                            <td><strong>{{ v.vaccine_name }}</strong></td>
+                            <td><small class="text-muted">{{ v.vaccination_date.strftime('%Y-%m-%d') }}</small></td>
+                            <td><small>{{ v.administered_by or 'N/A' }}</small></td>
+                            <td><code>{{ v.batch_reference or '-' }}</code></td>
+                            <td><span class="badge bg-success-subtle text-success border">Completed</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted small py-3 mb-0">No historical completed vaccinations found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

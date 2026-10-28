@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Risk Assessment #{{ assessment.id }} - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h3 class="fw-bold text-success mb-0">Disease Risk Assessment</h3>
+            <span class="badge bg-secondary-subtle text-secondary border">#{{ assessment.id }}</span>
+            <span class="badge bg-{{ assessment.risk_badge_class }}-subtle text-{{ assessment.risk_badge_class }} border fw-bold">
+                {{ assessment.risk_level }} Risk
+            </span>
+        </div>
+        <p class="text-muted small mb-0">Generated for {{ animal.animal_tag }} ({{ animal.species }}) on {{ assessment.created_at.strftime('%B %d, %Y at %H:%M') }}</p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('veterinary.record', animal_id=animal.id) }}" class="btn btn-outline-warning rounded-pill px-3 py-1">
+            <i class="bi bi-bandaid me-1"></i> Log Vet Consultation
+        </a>
+        <a href="{{ url_for('animals.detail', id=animal.id) }}" class="btn btn-outline-success rounded-pill px-3 py-1">
+            <i class="bi bi-person-badge me-1"></i> View Animal Profile
+        </a>
+        <a href="{{ url_for('predictions.workspace') }}" class="btn btn-success rounded-pill px-3 py-1 shadow-sm">
+            <i class="bi bi-plus-lg me-1"></i> New Assessment
+        </a>
+    </div>
+</div>
+
+<!-- Urgency Override Alert Banner -->
+{% if assessment.urgency_override %}
+<div class="alert alert-danger shadow-sm border-danger p-3 mb-4 rounded-3 d-flex align-items-center gap-3">
+    <i class="bi bi-exclamation-triangle-fill fs-2"></i>
+    <div>
+        <h5 class="fw-bold mb-1">EMERGENCY CLINICAL OVERRIDE TRIGGERED</h5>
+        <div class="small">
+            Life-threatening signs (e.g. recumbency, severe dyspnea, acute ruminal tympany) were detected. In accordance with veterinary safety protocols, this assessment is escalated to <strong>Critical Urgency</strong> regardless of algorithmic confidence scores. Contact an emergency veterinary doctor immediately.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Primary Prediction Summary -->
+    <div class="col-lg-5">
+        <div class="glass-card p-4 text-center mb-4">
+            <small class="text-uppercase tracking-wider text-muted fw-bold d-block mb-2">Estimated Disease Risk Class</small>
+            <h2 class="fw-bold text-{{ assessment.risk_badge_class }} mb-2">{{ assessment.predicted_class }}</h2>
+            <div class="d-inline-block px-3 py-1 rounded-pill bg-light border small text-muted mb-4">
+                Model: <strong>{{ assessment.model_name }}</strong> ({{ assessment.model_version }})
+            </div>
+
+            <!-- Probability breakdown bars -->
+            <div class="text-start border-top pt-3">
+                <h6 class="fw-bold text-success mb-3"><i class="bi bi-bar-chart-steps me-2"></i>Model Probability Scores</h6>
+                {% if assessment.prediction_scores_dict %}
+                {% for cls, prob in assessment.prediction_scores_dict.items() %}
+                {% set pct = (prob * 100)|round(1) %}
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="{% if cls == assessment.predicted_class %}fw-bold text-dark{% else %}text-muted{% endif %}">{{ cls }}</span>
+                        <span class="fw-bold">{{ pct }}%</span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar {% if cls == assessment.predicted_class %}bg-{{ assessment.risk_badge_class }}{% else %}bg-secondary-subtle text-secondary{% endif %}" 
+                             role="progressbar" style="width: {{ pct }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-muted small">No class probability distribution available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Animal Demographics Snapshot -->
+        <div class="glass-card p-4">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle me-2 text-success"></i>Assessment Input Snapshot</h6>
+            <div class="small text-muted">
+                {% set snap = assessment.input_snapshot_dict %}
+                <div class="row py-1 border-bottom">
+                    <div class="col-6">Body Temperature:</div>
+                    <div class="col-6 fw-bold text-dark">{{ snap.get('temperature_c', '-') }} °C</div>
+                </div>
+                <div class="row py-1 border-bottom">
+                    <div class="col-6">Heart Rate:</div>
+                    <div class="col-6 fw-bold text-dark">{{ snap.get('heart_rate_bpm', '-') }} bpm</div>
+                </div>
+                <div class="row py-1 border-bottom">
+                    <div class="col-6">Respiratory Rate:</div>
+                    <div class="col-6 fw-bold text-dark">{{ snap.get('respiratory_rate_bpm', '-') }} breaths/min</div>
+                </div>
+                <div class="row py-1 border-bottom">
+                    <div class="col-6">Food / Water Intake:</div>
+                    <div class="col-6 fw-bold text-dark">{{ snap.get('food_intake', '-') }} / {{ snap.get('water_intake', '-') }}</div>
+                </div>
+                <div class="row py-1 border-bottom">
+                    <div class="col-6">Rumination / Mobility:</div>
+                    <div class="col-6 fw-bold text-dark">{{ snap.get('rumination', '-') }} / {{ snap.get('walking_activity', '-') }}</div>
+                </div>
+                <div class="row py-1">
+                    <div class="col-6">Body Condition:</div>
+                    <div class="col-6 fw-bold text-dark">{{ snap.get('body_condition_score', '-') }} / 5.0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations and Clinical Protocols -->
+    <div class="col-lg-7">
+        <!-- Recommended Action Steps -->
+        <div class="glass-card p-4 mb-4 border-success-subtle">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-shield-check me-2"></i>Recommended Clinical Next Steps</h5>
+            <p class="small text-muted mb-3">Protocol guidelines recommended for <strong>{{ assessment.predicted_class }}</strong>:</p>
+
+            <ul class="list-unstyled mb-0">
+                {% for step in recommended_steps %}
+                <li class="mb-3 d-flex align-items-start gap-2">
+                    <i class="bi bi-arrow-right-circle-fill text-success fs-5"></i>
+                    <div class="small"><strong>Step {{ loop.index }}:</strong> {{ step }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Follow-up Notes Form for Veterinarian / Farmer -->
+        <div class="glass-card p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-chat-left-text me-2 text-primary"></i>Veterinary Follow-Up Observation</h6>
+            <p class="small text-muted mb-3">Record attending doctor's notes or confirmed diagnosis following clinical examination.</p>
+            <div class="p-3 bg-light rounded-3 border small">
+                {{ assessment.veterinary_notes or 'No veterinary follow-up notes logged yet. Log a veterinary consultation to update this record.' }}
+            </div>
+            <div class="mt-3">
+                <a href="{{ url_for('veterinary.record', animal_id=animal.id) }}" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                    <i class="bi bi-pencil-square me-1"></i> Add Attending Doctor Diagnosis
+                </a>
+            </div>
+        </div>
+
+        <!-- Legal Disclaimer Callout -->
+        <div class="disclaimer-banner">
+            <h6 class="fw-bold mb-1 text-warning"><i class="bi bi-exclamation-triangle-fill me-1"></i> Mandatory Medical Disclaimer</h6>
+            <p class="mb-0 small">
+                Automated assessments are informational and do not confirm a disease. Consult a qualified veterinarian for diagnosis and treatment. Seek urgent veterinary care when severe or rapidly worsening symptoms are observed.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

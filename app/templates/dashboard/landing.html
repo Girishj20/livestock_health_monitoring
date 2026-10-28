@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% block title %}Welcome - Digital Livestock Health & Risk Platform{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Hero Section -->
+    <section class="py-5 text-center text-lg-start position-relative overflow-hidden mb-5 rounded-4 shadow-sm" 
+             style="background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 60%, #40916c 100%); color: #ffffff; padding: 4rem 2rem;">
+        <div class="row align-items-center">
+            <div class="col-lg-7 p-4">
+                <span class="badge bg-light text-success px-3 py-2 rounded-pill fw-bold mb-3">
+                    <i class="bi bi-shield-check me-1"></i> Professional Livestock Care & Decision-Support
+                </span>
+                <h1 class="display-4 fw-bold mb-3" style="line-height: 1.15;">
+                    Intelligent Health Monitoring & Disease Risk Assessment
+                </h1>
+                <p class="lead mb-4 text-light opacity-90" style="font-size: 1.15rem;">
+                    Empowering farmers, dairy producers, and veterinarians with centralized animal digital records, physiological observation tracking, and machine-learning-assisted early risk recognition.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-light text-success btn-lg px-4 py-2 fw-semibold rounded-pill shadow-sm">
+                        <i class="bi bi-person-plus-fill me-2"></i> Register Farm Account
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4 py-2 fw-semibold rounded-pill">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Sign In to Portal
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 p-4 d-none d-lg-block text-center">
+                <div class="p-4 rounded-4" style="background: rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    <i class="bi bi-heart-pulse text-warning display-1 mb-3 d-block"></i>
+                    <h4 class="fw-bold mb-2">Early Warning Saves Herds</h4>
+                    <p class="small text-light opacity-75 mb-0">
+                        Timely recognition of abnormal vital trends—temperature spikes, rumination drops, and subtle clinical symptoms—allows prompt veterinary intervention before productivity collapse.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem & Solution Statement -->
+    <section class="py-4 mb-5">
+        <div class="text-center mb-5">
+            <h6 class="text-success fw-bold text-uppercase tracking-wider">The Agricultural Imperative</h6>
+            <h2 class="fw-bold">Why Digital Health Monitoring Matters</h2>
+            <p class="text-muted mx-auto" style="max-width: 680px;">
+                Livestock animals are vital to dairy farming, rural livelihoods, and agricultural sustainability. Undetected diseases lead to catastrophic animal suffering and economic loss.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="metric-icon bg-danger-subtle text-danger mb-3">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h5 class="fw-bold">Delayed Intervention</h5>
+                    <p class="text-muted small">
+                        Subtle behavioral changes like reduced rumination or subclinical fever are often missed during visual checks until the animal collapses or milk output drops steeply.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="metric-icon bg-warning-subtle text-warning mb-3">
+                        <i class="bi bi-journal-x"></i>
+                    </div>
+                    <h5 class="fw-bold">Scattered Paper Records</h5>
+                    <p class="text-muted small">
+                        Vaccination schedules, treatment courses, and medical diagnoses recorded on paper notebooks frequently get lost, hindering continuity of veterinary care.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="glass-card p-4 h-100">
+                    <div class="metric-icon bg-success-subtle text-success mb-3">
+                        <i class="bi bi-check2-circle"></i>
+                    </div>
+                    <h5 class="fw-bold">Centralized Decision-Support</h5>
+                    <p class="text-muted small">
+                        Our centralized platform brings together individual animal identification, standardized vital recording, machine learning risk estimates, and veterinary follow-ups.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Animal Species -->
+    <section class="py-4 mb-5 bg-light rounded-4 p-4">
+        <div class="text-center mb-4">
+            <h6 class="text-success fw-bold text-uppercase">Species Coverage</h6>
+            <h2 class="fw-bold">Calibrated for Key Livestock Species</h2>
+            <p class="text-muted">Physiological baselines differ between large dairy animals and small ruminants.</p>
+        </div>
+
+        <div class="row g-3 text-center">
+            <div class="col-sm-6 col-md-3">
+                <div class="glass-card p-3">
+                    <i class="bi bi-award text-success fs-1 mb-2 d-block"></i>
+                    <h5 class="fw-bold mb-1">Cattle (Cow)</h5>
+                    <small class="text-muted d-block">Normal Temp: 38.0 - 39.3°C</small>
+                    <small class="text-muted d-block">Heart Rate: 48 - 84 bpm</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="glass-card p-3">
+                    <i class="bi bi-gem text-info fs-1 mb-2 d-block"></i>
+                    <h5 class="fw-bold mb-1">Buffalo</h5>
+                    <small class="text-muted d-block">Normal Temp: 37.5 - 39.0°C</small>
+                    <small class="text-muted d-block">Heart Rate: 40 - 70 bpm</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="glass-card p-3">
+                    <i class="bi bi-stars text-warning fs-1 mb-2 d-block"></i>
+                    <h5 class="fw-bold mb-1">Goat</h5>
+                    <small class="text-muted d-block">Normal Temp: 38.5 - 40.0°C</small>
+                    <small class="text-muted d-block">Heart Rate: 70 - 120 bpm</small>
+                </div>
+            </div>
+            <div class="col-sm-6 col-md-3">
+                <div class="glass-card p-3">
+                    <i class="bi bi-shield-shaded text-primary fs-1 mb-2 d-block"></i>
+                    <h5 class="fw-bold mb-1">Sheep</h5>
+                    <small class="text-muted d-block">Normal Temp: 38.5 - 40.0°C</small>
+                    <small class="text-muted d-block">Heart Rate: 70 - 100 bpm</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How the System Works -->
+    <section class="py-4 mb-5">
+        <div class="text-center mb-5">
+            <h6 class="text-success fw-bold text-uppercase">Operating Workflow</h6>
+            <h2 class="fw-bold">How the Monitoring System Works</h2>
+        </div>
+
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="glass-card p-4 h-100">
+                    <div class="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: bold;">1</div>
+                    <h5 class="fw-bold">Register Animal</h5>
+                    <p class="text-muted small">Record animal tag ID, breed, age, sex, weight, and farm location into the digital ledger.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card p-4 h-100">
+                    <div class="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: bold;">2</div>
+                    <h5 class="fw-bold">Record Vitals</h5>
+                    <p class="text-muted small">Input temperature, heart rate, respiration rate, feeding intake, rumination, and clinical symptoms.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card p-4 h-100">
+                    <div class="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: bold;">3</div>
+                    <h5 class="fw-bold">ML Risk Evaluation</h5>
+                    <p class="text-muted small">Trained classification models analyze observation patterns to estimate potential disease probabilities.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="glass-card p-4 h-100">
+                    <div class="rounded-circle bg-success text-white mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-weight: bold;">4</div>
+                    <h5 class="fw-bold">Veterinary Care</h5>
+                    <p class="text-muted small">Schedule visits, log attending doctor diagnoses, manage prescribed medications, and track vaccinations.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Platform Benefits -->
+    <section class="py-4 mb-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h6 class="text-success fw-bold text-uppercase">Producer Welfare</h6>
+                <h2 class="fw-bold mb-3">Engineered for Everyday Farm Operations</h2>
+                <ul class="list-unstyled">
+                    <li class="mb-3 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div><strong>Farm-Level Data Privacy:</strong> Complete multi-tenant data isolation ensures only authorized staff inspect your livestock dossiers.</div>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div><strong>Automated Overdue Reminders:</strong> Proactive alerts for booster vaccinations, veterinary follow-ups, and deteriorating observations.</div>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div><strong>Clinical Safety Overrides:</strong> Urgent life-threatening criteria immediately sound the alarm regardless of model scores.</div>
+                    </li>
+                    <li class="mb-3 d-flex align-items-start gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div><strong>Instant Export & Dossiers:</strong> Download comprehensive printable animal health dossiers and CSV logs for inspections.</div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-card p-4 border-success">
+                    <h5 class="fw-bold mb-3 text-success"><i class="bi bi-shield-check me-2"></i>Medical & Ethics Safeguards</h5>
+                    <p class="small text-muted mb-2">
+                        Our software is explicitly designed as a <strong>decision-support and tracking assistant</strong>, NOT a replacement for a licensed veterinary professional.
+                    </p>
+                    <p class="small text-muted mb-2">
+                        Predictions are calculated probability estimates based on documented veterinary correlations. A low statistical risk score never overrides visible critical symptoms such as severe respiratory distress, acute bloat, or recumbency.
+                    </p>
+                    <div class="alert alert-warning py-2 px-3 small mb-0">
+                        <i class="bi bi-telephone-outbound me-1"></i> Always consult your local registered veterinarian for official prescriptions and surgical interventions.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="py-5 text-center glass-card p-5 my-5 border-success-subtle">
+        <h2 class="fw-bold mb-3">Ready to Modernize Your Livestock Health Records?</h2>
+        <p class="text-muted mx-auto mb-4" style="max-width: 600px;">
+            Join progressive farmers, farm managers, and veterinary practitioners in safeguarding animal welfare and farm productivity.
+        </p>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg px-4 py-2 rounded-pill shadow-sm">
+            <i class="bi bi-arrow-right-circle me-2"></i> Get Started with Free Account
+        </a>
+    </section>
+</div>
+{% endblock %}

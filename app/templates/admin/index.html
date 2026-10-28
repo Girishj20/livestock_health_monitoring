@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Administrator Dashboard - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">System Administration Console</h3>
+        <p class="text-muted small mb-0">Platform governance, user accounts, audit trails, and machine learning infrastructure</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-success rounded-pill px-3 py-1">
+            <i class="bi bi-people me-1"></i> User Management
+        </a>
+        <a href="{{ url_for('admin.system_health') }}" class="btn btn-outline-primary rounded-pill px-3 py-1">
+            <i class="bi bi-activity me-1"></i> System Health
+        </a>
+    </div>
+</div>
+
+<!-- Key Admin Metrics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card glass-card">
+            <div class="metric-icon bg-success-subtle text-success"><i class="bi bi-people"></i></div>
+            <div class="metric-value">{{ user_count }}</div>
+            <div class="metric-label">Registered Users</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card glass-card">
+            <div class="metric-icon bg-primary-subtle text-primary"><i class="bi bi-buildings"></i></div>
+            <div class="metric-value">{{ farm_count }}</div>
+            <div class="metric-label">Active Farms</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card glass-card">
+            <div class="metric-icon bg-info-subtle text-info"><i class="bi bi-collection"></i></div>
+            <div class="metric-value">{{ animal_count }}</div>
+            <div class="metric-label">Livestock Herds</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card glass-card">
+            <div class="metric-icon bg-warning-subtle text-warning"><i class="bi bi-clipboard2-pulse"></i></div>
+            <div class="metric-value">{{ obs_count }}</div>
+            <div class="metric-label">Surveillance Logs</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card glass-card">
+            <div class="metric-icon bg-danger-subtle text-danger"><i class="bi bi-cpu"></i></div>
+            <div class="metric-value">{{ assessment_count }}</div>
+            <div class="metric-label">ML Assessments</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-2">
+        <div class="metric-card glass-card">
+            <div class="metric-icon bg-success-subtle text-success"><i class="bi bi-patch-check"></i></div>
+            <div class="metric-value">{{ vet_count }}</div>
+            <div class="metric-label">Veterinarians</div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Quick Navigation Navigation Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <i class="bi bi-people-fill text-success fs-3"></i>
+                <h5 class="fw-bold mb-0">User Directory</h5>
+            </div>
+            <p class="small text-muted mb-3">Manage user permissions, change roles (farmer, veterinarian, manager, admin), and suspend accounts.</p>
+            <a href="{{ url_for('admin.users') }}" class="btn btn-sm btn-outline-success rounded-pill px-3">Manage Accounts</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <i class="bi bi-cpu-fill text-info fs-3"></i>
+                <h5 class="fw-bold mb-0">Model Registry</h5>
+            </div>
+            <p class="small text-muted mb-3">Inspect trained species-specific Random Forest pipelines, versions, and accuracy metrics.</p>
+            <a href="{{ url_for('admin.models') }}" class="btn btn-sm btn-outline-info rounded-pill px-3">Inspect Registry</a>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex align-items-center gap-3 mb-2">
+                <i class="bi bi-clock-history text-secondary fs-3"></i>
+                <h5 class="fw-bold mb-0">System Audit Trail</h5>
+            </div>
+            <p class="small text-muted mb-3">Review full audit trail of logins, animal registrations, assessments, and security operations.</p>
+            <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">View Audit Logs</a>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Audit Logs Table -->
+<div class="glass-card p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-success mb-0"><i class="bi bi-shield-check me-2"></i>Recent Security & Activity Logs</h5>
+        <a href="{{ url_for('admin.audit_logs') }}" class="small text-decoration-none">Full Audit Trail</a>
+    </div>
+
+    {% if recent_logs %}
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Target Entity</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td><small class="text-muted">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</small></td>
+                    <td><strong>{{ log.actor_name }}</strong></td>
+                    <td><code>{{ log.action }}</code></td>
+                    <td><span class="badge bg-light text-dark border">{{ log.entity_type }}</span></td>
+                    <td><small class="text-muted">{{ log.details or '-' }}</small></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted small mb-0">No audit activity logged yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

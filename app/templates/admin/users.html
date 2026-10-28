@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}User Management - Admin Console{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">User & Role Management</h3>
+        <p class="text-muted small mb-0">Manage registered user accounts, assign system roles, and configure activation states</p>
+    </div>
+    <a href="{{ url_for('admin.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Admin Console
+    </a>
+</div>
+
+<div class="glass-card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">User Details</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="text-end pe-4">Update Permissions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; font-weight: bold; font-size: 0.8rem;">
+                                {{ u.full_name[:1].upper() }}
+                            </div>
+                            <div>
+                                <strong class="text-dark">{{ u.full_name }}</strong>
+                                {% if u.id == current_user.id %}<span class="badge bg-secondary ms-1">You</span>{% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>
+                        <span class="badge bg-light text-secondary border text-capitalize">{{ u.role.replace('_', ' ') }}</span>
+                    </td>
+                    <td>
+                        <span class="badge {% if u.account_status == 'active' %}bg-success-subtle text-success border{% else %}bg-danger-subtle text-danger border{% endif %}">
+                            {{ u.account_status }}
+                        </span>
+                    </td>
+                    <td><small class="text-muted">{{ u.created_at.strftime('%Y-%m-%d') }}</small></td>
+                    <td class="text-end pe-4">
+                        {% if u.id != current_user.id %}
+                        <form method="POST" action="{{ url_for('admin.user_status', id=u.id) }}" class="d-inline-flex gap-1 align-items-center">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                            <select name="role" class="form-select form-select-sm" style="width: 140px;">
+                                <option value="farmer" {% if u.role == 'farmer' %}selected{% endif %}>Farmer</option>
+                                <option value="veterinarian" {% if u.role == 'veterinarian' %}selected{% endif %}>Veterinarian</option>
+                                <option value="farm_manager" {% if u.role == 'farm_manager' %}selected{% endif %}>Farm Manager</option>
+                                <option value="administrator" {% if u.role == 'administrator' %}selected{% endif %}>Administrator</option>
+                            </select>
+                            <select name="status" class="form-select form-select-sm" style="width: 110px;">
+                                <option value="active" {% if u.account_status == 'active' %}selected{% endif %}>Active</option>
+                                <option value="suspended" {% if u.account_status == 'suspended' %}selected{% endif %}>Suspended</option>
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-outline-success">Update</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted small">Current Session</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

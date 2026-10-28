@@ -1,0 +1,95 @@
+{
+  "unified_model": {
+    "accuracy": 1.0,
+    "f1_weighted": 1.0,
+    "test_samples": 480,
+    "classification_report": {
+      "Bloat (Tympanites)": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Bovine Respiratory Disease / Pneumonia": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Enterotoxemia / GI Infection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Foot and Mouth Disease (FMD)": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Healthy / Normal": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Lumpy Skin Disease (LSD)": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Mastitis": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "Parasitic Gastroenteritis": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 60.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 480.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 480.0
+      }
+    }
+  },
+  "species_models": {
+    "Cow": {
+      "accuracy": 1.0,
+      "f1_weighted": 1.0,
+      "test_samples": 123
+    },
+    "Buffalo": {
+      "accuracy": 1.0,
+      "f1_weighted": 1.0,
+      "test_samples": 122
+    },
+    "Goat": {
+      "accuracy": 1.0,
+      "f1_weighted": 1.0,
+      "test_samples": 115
+    },
+    "Sheep": {
+      "accuracy": 1.0,
+      "f1_weighted": 1.0,
+      "test_samples": 121
+    }
+  },
+  "model_version": "1.0.0",
+  "algorithm": "RandomForestClassifier (n_estimators=120, max_depth=12)",
+  "timestamp": "2026-10-28T21:26:58.557468"
+}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Record Vitals & Health Observation - Livestock Health Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-success mb-1">Record Health Observation</h3>
+        <p class="text-muted small mb-0">Capture physiological measurements, behavioral markers, and clinical symptoms</p>
+    </div>
+    <a href="{{ url_for('animals.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-1">
+        <i class="bi bi-arrow-left me-1"></i> Animals List
+    </a>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 p-md-5">
+            <form method="POST" action="{{ url_for('observations.record') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+
+                <!-- Animal Selection & Timestamp -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-7">
+                        <label class="form-label small fw-semibold">Target Animal *</label>
+                        <select name="animal_id" id="animalSelector" class="form-select" required onchange="handleAnimalChange()">
+                            <option value="">-- Select Animal by Tag --</option>
+                            {% for a in animals %}
+                            <option value="{{ a.id }}" data-species="{{ a.species }}" 
+                                    {% if selected_animal and selected_animal.id == a.id %}selected{% endif %}>
+                                {{ a.animal_tag }} ({{ a.species }}{% if a.animal_name %} - {{ a.animal_name }}{% endif %}) - {{ a.farm.farm_name if a.farm else 'Farm' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label small fw-semibold">Observation Date & Time</label>
+                        <input type="datetime-local" name="observed_at" id="observedAt" class="form-control" required>
+                    </div>
+                </div>
+
+                <!-- Section 1: Vital Signs -->
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-success mb-0"><i class="bi bi-heart-pulse me-2"></i>1. Vital Signs</h6>
+                        <span id="speciesBadge" class="badge bg-success-subtle text-success border">
+                            {{ selected_animal.species if selected_animal else 'Standard' }} Reference
+                        </span>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-3 col-6">
+                            <label class="form-label small fw-semibold">Temperature (°C)</label>
+                            <input type="number" step="0.1" name="temperature_c" class="form-control" placeholder="38.5" min="30.0" max="45.0">
+                            <div class="form-text small" id="tempHelp">Cow: 38.0 - 39.3°C</div>
+                        </div>
+
+                        <div class="col-md-3 col-6">
+                            <label class="form-label small fw-semibold">Heart Rate (bpm)</label>
+                            <input type="number" step="1" name="heart_rate_bpm" class="form-control" placeholder="65" min="20" max="250">
+                            <div class="form-text small" id="hrHelp">Cow: 48 - 84 bpm</div>
+                        </div>
+
+                        <div class="col-md-3 col-6">
+                            <label class="form-label small fw-semibold">Resp Rate (breaths/min)</label>
+                            <input type="number" step="1" name="respiratory_rate_bpm" class="form-control" placeholder="28" min="5" max="140">
+                            <div class="form-text small" id="rrHelp">Cow: 24 - 40 breaths</div>
+                        </div>
+
+                        <div class="col-md-3 col-6">
+                            <label class="form-label small fw-semibold">Current Weight (kg)</label>
+                            <input type="number" step="0.1" name="weight_kg" class="form-control" placeholder="e.g. 450" value="{{ selected_animal.weight_kg if selected_animal and selected_animal.weight_kg else '' }}">
+                            <div class="form-text small">Updates record</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Behavioral Markers -->
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-success mb-3"><i class="bi bi-eye me-2"></i>2. Behavioral Indicators</h6>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Food Intake</label>
+                            <select name="food_intake" class="form-select">
+                                <option value="Normal" selected>Normal</option>
+                                <option value="Reduced">Reduced Appetite</option>
+                                <option value="Anorexic">Anorexic / Refusing Feed</option>
+                                <option value="Increased">Increased</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Water Intake</label>
+                            <select name="water_intake" class="form-select">
+                                <option value="Normal" selected>Normal</option>
+                                <option value="Reduced">Reduced</option>
+                                <option value="Excessive">Excessive (Polydipsia)</option>
+                                <option value="None">None</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Rumination / Chewing Cud</label>
+                            <select name="rumination" class="form-select">
+                                <option value="Normal" selected>Normal (2-3 cycles/min)</option>
+                                <option value="Reduced">Reduced / Sluggish</option>
+                                <option value="Absent">Absent (Atony)</option>
+                                <option value="N/A">Not Applicable</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Mobility / Walking Activity</label>
+                            <select name="walking_activity" class="form-select">
+                                <option value="Normal" selected>Normal / Active</option>
+                                <option value="Sluggish">Sluggish / Depressed</option>
+                                <option value="Lame">Lame (Limping)</option>
+                                <option value="Staggering">Staggering / Ataxic</option>
+                                <option value="Recumbent">Recumbent (Downer / Unable to Stand)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Resting Behavior</label>
+                            <select name="resting_behavior" class="form-select">
+                                <option value="Normal" selected>Normal</option>
+                                <option value="Restless">Restless / Kicking Flank</option>
+                                <option value="Lethargic">Lethargic / Dull</option>
+                                <option value="Isolated">Isolated from Herd</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold">Body Condition Score (1-5)</label>
+                            <input type="number" step="0.25" min="1.0" max="5.0" name="body_condition_score" class="form-control" placeholder="3.25">
+                            <div class="form-text small">Optimal: 2.5 - 3.5</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Daily Milk Output (Liters, if milch)</label>
+                            <input type="number" step="0.1" name="milk_production" class="form-control" placeholder="e.g. 18.5">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold">Data Source</label>
+                            <select name="data_source" class="form-select">
+                                <option value="manual" selected>Manual Clinical Observation</option>
+                                <option value="sensor">Wearable / Sensor Feed</option>
+                                <option value="veterinary_check">Veterinary Physical Exam</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Clinical Symptoms Checklist -->
+                <div class="p-3 bg-light rounded-3 mb-4 border">
+                    <h6 class="fw-bold text-success mb-2"><i class="bi bi-thermometer-high me-2"></i>3. Observed Clinical Symptoms</h6>
+                    <p class="text-muted small mb-3">Check all symptoms currently observed in this animal:</p>
+
+                    <div class="row g-2">
+                        {% for sym in known_symptoms %}
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="symptoms" value="{{ sym }}" id="sym_{{ loop.index }}">
+                                <label class="form-check-label small {% if 'Acute' in sym or 'Recumbent' in sym or 'Severe' in sym or 'High Fever' in sym %}text-danger fw-bold{% endif %}" for="sym_{{ loop.index }}">
+                                    {{ sym }}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label small fw-semibold">Other Symptom (if unlisted)</label>
+                        <input type="text" name="other_symptom" class="form-control" placeholder="e.g. Grinding teeth, watery eyes...">
+                    </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">Additional Clinical / Contextual Notes</label>
+                    <textarea name="additional_notes" class="form-control" rows="3" placeholder="Context (e.g., pasture change, recent calving, weather extremes)..."></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ url_for('animals.index') }}" class="btn btn-outline-secondary px-4 rounded-pill">Cancel</a>
+                    <button type="submit" class="btn btn-success px-5 rounded-pill fw-semibold shadow-sm">
+                        <i class="bi bi-save me-1"></i> Save Health Observation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Sidebar Reference Card -->
+    <div class="col-lg-4">
+        <div class="glass-card p-4 mb-4 border-success-subtle">
+            <h5 class="fw-bold text-success mb-3"><i class="bi bi-info-circle me-2"></i>Clinical Reference Guides</h5>
+            <p class="small text-muted">Physiological reference limits defined by international veterinary standards:</p>
+
+            <div class="table-responsive small mb-3">
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Species</th>
+                            <th>Temp (°C)</th>
+                            <th>Pulse (bpm)</th>
+                            <th>Resp (min)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Cow</strong></td><td>38.0 - 39.3</td><td>48 - 84</td><td>24 - 40</td></tr>
+                        <tr><td><strong>Buffalo</strong></td><td>37.5 - 39.0</td><td>40 - 70</td><td>15 - 30</td></tr>
+                        <tr><td><strong>Goat</strong></td><td>38.5 - 40.0</td><td>70 - 120</td><td>15 - 30</td></tr>
+                        <tr><td><strong>Sheep</strong></td><td>38.5 - 40.0</td><td>70 - 100</td><td>16 - 34</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-danger p-2 small mb-0">
+                <strong><i class="bi bi-exclamation-triangle-fill me-1"></i> Emergency Signs:</strong>
+                Recumbency, acute bloat, hemorrhagic diarrhea, or hyperthermia > 41°C automatically classify as <em>Urgent Veterinary Attention</em>.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Default current datetime in input
+document.addEventListener('DOMContentLoaded', () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('observedAt').value = now.toISOString().slice(0, 16);
+});
+
+function handleAnimalChange() {
+    const sel = document.getElementById('animalSelector');
+    const opt = sel.options[sel.selectedIndex];
+    const species = opt.getAttribute('data-species') || 'Cow';
+    
+    document.getElementById('speciesBadge').textContent = species + ' Reference';
+    
+    const ranges = {
+        'Cow': { temp: 'Cow: 38.0 - 39.3°C', hr: 'Cow: 48 - 84 bpm', rr: 'Cow: 24 - 40 breaths' },
+        'Buffalo': { temp: 'Buffalo: 37.5 - 39.0°C', hr: 'Buffalo: 40 - 70 bpm', rr: 'Buffalo: 15 - 30 breaths' },
+        'Goat': { temp: 'Goat: 38.5 - 40.0°C', hr: 'Goat: 70 - 120 bpm', rr: 'Goat: 15 - 30 breaths' },
+        'Sheep': { temp: 'Sheep: 38.5 - 40.0°C', hr: 'Sheep: 70 - 100 bpm', rr: 'Sheep: 16 - 34 breaths' }
+    };
+
+    const cur = ranges[species] || ranges['Cow'];
+    document.getElementById('tempHelp').textContent = cur.temp;
+    document.getElementById('hrHelp').textContent = cur.hr;
+    document.getElementById('rrHelp').textContent = cur.rr;
+}
+</script>
+{% endblock %}
