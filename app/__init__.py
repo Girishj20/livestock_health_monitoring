@@ -22,6 +22,10 @@ def create_app(config_name=None):
         # Ensure all models are imported and tables created
         from app import models as app_models
         create_all_tables()
+        
+        # Auto-seed initial reference data and demo accounts if needed (e.g. On Vercel /tmp)
+        from app.utils.auto_seeder import ensure_initial_seed
+        ensure_initial_seed()
 
     # Context processors for all Jinja templates
     @app.context_processor
